@@ -43,15 +43,18 @@ char UUIDBytes[64];
 char body[1024];
 // DigitalOut myled(MBED_CONF_IOTKIT_LED1);
 int main() {
+    oled.clear();
+    oled.cursor(0, 0);
+    oled.printf("RFID Reader - Michel\n");
   uint8_t id;
   float value1, value2;
-  printf("\tThingSpeak\n");
+  //printf("\tThingSpeak\n");
   /* Init all sensors with default params */
   hum_temp.init(NULL);
   hum_temp.enable();
   hum_temp.read_id(&id);
-  printf("HTS221  humidity & temperature    = 0x%X\r\n", id);
-  printf("RFID Reader MFRC522 Test V3\n");
+  //printf("HTS221  humidity & temperature    = 0x%X\r\n", id);
+  //printf("RFID Reader MFRC522 Test V3\n");
   rfidReader.PCD_Init();
   // Connect to the network with the default networking interface
   // if you use WiFi: see mbed_app.json for the credentials
@@ -60,19 +63,22 @@ int main() {
     printf("ERROR: No WiFiInterface found.\n");
     return -1;
   }
-  printf("\nConnecting to %s...\n", MBED_CONF_APP_WIFI_SSID);
+  oled.printf("\nConnecting to %s...\n", MBED_CONF_APP_WIFI_SSID);
   int ret =
       network->connect(MBED_CONF_APP_WIFI_SSID, MBED_CONF_APP_WIFI_PASSWORD,
                        NSAPI_SECURITY_WPA_WPA2);
   if (ret != 0) {
-    printf("\nConnection error: %d\n", ret);
+    oled.printf("\nConnection error: %d\n", ret);
     return -1;
   }
-  printf("Success\n\n");
-  printf("MAC: %s\n", network->get_mac_address());
+  oled.clear();
+  oled.cursor(0, 0);
+  oled.printf("Success\n");
+  oled.printf("MAC:%s\n", network->get_mac_address());
   SocketAddress a;
   network->get_ip_address(&a);
-  printf("IP: %s\n", a.get_ip_address());
+
+  oled.printf("IP: %s\n", a.get_ip_address());
   while (1) {
     if (rfidReader.PICC_IsNewCardPresent())
       if (rfidReader.PICC_ReadCardSerial()) {
@@ -88,16 +94,20 @@ int main() {
         // Select one of the cards
         if (!rfidReader.PICC_ReadCardSerial()) {
         }
+        oled.clear();
+        oled.cursor(0, 0);
         char mac[6];
         mbed_mac_address(mac);
         char finalmac[64];
         sprintf(finalmac, "%02x:%02x:%02x:%02x:%02x:%02x", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]); 
-        HttpRequest* post_req = new HttpRequest( network, HTTP_POST, "http://findify.lopo.dev:8000/");//todo, send thing to backend
+        HttpRequest* post_req = new HttpRequest( network, HTTP_POST, "http://findify.lopo.dev:8000/");
         post_req->set_header("Content-Type", "application/json");
-        sprintf( body, "{ \"UUID\": \"%s\", \"mac-address\": \"%s\" }", UUIDBytes, finalmac);
+        sprintf( body, "{ \"UUID\": \"%s\", \"MAC-Address\": \"%s\" }", UUIDBytes, finalmac);
         cout << "body:" << body <<endl;
+        oled.printf("sending Request: \n %s \n", UUIDBytes);
         HttpResponse* post_res = post_req->send(body, strlen(body));
-        cout << post_res->get_status_code() << endl;
+        oled.printf("Received code: %i \n", post_res->get_status_code());
+        oled.clear();
         memset(body, 0, strlen(body));
 
       }
