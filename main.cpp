@@ -30,12 +30,15 @@ char body[1024];
 
 
 int main() {
+
+    printf("\n");
   // Initialize the display
     oled.clear();
     //set oled cursor to 0,0
     oled.cursor(0, 0);
     //print oled starting message
     oled.printf("RFID Reader - Michel\n");
+    printf("RFID Reader - Michel\n");
   uint8_t id;
   float value1, value2;
   /* Init all sensors with default params */
@@ -45,9 +48,11 @@ int main() {
   WiFiInterface *network = WiFiInterface::get_default_instance();
   if (!network) {
     printf("ERROR: No WiFiInterface found.\n");
+    oled.printf("ERROR: No WiFiInterface found.\n");
     return -1;
   }
   // Connect to the network
+  printf("Connecting to %s...\n", MBED_CONF_APP_WIFI_SSID);
   oled.printf("\nConnecting to %s...\n", MBED_CONF_APP_WIFI_SSID);
   int ret =
       network->connect(MBED_CONF_APP_WIFI_SSID, MBED_CONF_APP_WIFI_PASSWORD,
@@ -58,19 +63,27 @@ int main() {
     // Connection error
     oled.printf("\nConnection error: %d\n", ret);
     oled.printf("press the black button to reset\n");
+
+    printf("\nConnection error: %d\n", ret);
+    printf("press the black button to reset\n");
     return -1;
   }
 
   oled.clear();
   oled.cursor(0, 0);
-  
+
+  printf("Success\n");
+  printf("Mac-address: %s\n", network->get_mac_address());
+
   oled.printf("Success\n");
-  oled.printf("MAC:%s\n", network->get_mac_address());
+  oled.printf("Mac-address: %s\n", network->get_mac_address());
   SocketAddress a;
   network->get_ip_address(&a);
 
   //print IP address
   oled.printf("IP: %s\n", a.get_ip_address());
+    //print IP address
+  printf("IP: %s\n", a.get_ip_address());
   while (1) {
     if (rfidReader.PICC_IsNewCardPresent())
       if (rfidReader.PICC_ReadCardSerial()) {
@@ -86,8 +99,6 @@ int main() {
 
         //remove last char (:)
         UUIDBytes[strlen(UUIDBytes) -1] = '\0';
-        //print UID to console
-        std::cout << UUIDBytes << std::endl;
 
 
       
@@ -111,25 +122,27 @@ int main() {
         sprintf(finalmac, "%02X:%02X:%02X:%02X:%02X:%02X", mac[0], mac[1], mac[2], mac[3], mac[4], mac[5]); 
 
         //create post_request, with
-        HttpRequest* post_req = new HttpRequest( network, HTTP_POST, "http://195.201.100.195:8000/");
+        HttpRequest* post_req = new HttpRequest( network, HTTP_POST, "http://lenserver.one:500/api/v1/iot-handler");
         //set header to json
         post_req->set_header("Content-Type", "application/json");
         //create json string
         sprintf( body, "{ \"serial_number\": \"%s\", \"mac_address\": \"%s\" }", UUIDBytes, finalmac);
         //print body to console
-        cout << "body:" << body <<endl;
+        printf("body: %s \n", body);
         //print on oled, that he is sending data
-        oled.printf("sending Request: \n %s", UUIDBytes);
+        printf("Request: %s\n", UUIDBytes);
+        oled.printf("Request: %s\n", UUIDBytes);
         //get response by sending the request.
         HttpResponse* post_res = post_req->send(body, strlen(body));
         //print response to oled display
-        oled.printf("\n Code: %i \n", post_res->get_status_code());
-        //print response to console
-        printf("%i", post_res->get_status_code());
-        //clear oled display
+        printf("\n");
         oled.clear();
-        //put cursor at 0,0
+        // put cursor at 0,0
         oled.cursor(0, 0);
+        printf("Code: %i\n", post_res->get_status_code());
+        oled.printf("Code: %i\n", post_res->get_status_code());
+        printf("Response: %s\n", post_res->get_body());
+        oled.printf("Response: %s", post_res->get_body());
 
         //delete request and response
         memset(body, 0, strlen(body));

@@ -2,11 +2,11 @@
     "config": {
         "wifi-ssid": {
             "help": "WiFi SSID",
-            "value": "\"UPC22F6498_2.4GHz\""
+            "value": "\"LERNKUBE\""
         },
         "wifi-password": {
             "help": "WiFi Password",
-            "value": "\"Ut7kksrtmkSn\""
+            "value": "\"l3rnk4b3\""
         }
     },    
     "target_overrides": {
