@@ -8,7 +8,6 @@
 #include "OLEDDisplay.h"
 #include "http_request.h"
 
-using std::cout;
 
 using namespace std;
 // UI
@@ -37,8 +36,8 @@ int main() {
     //set oled cursor to 0,0
     oled.cursor(0, 0);
     //print oled starting message
-    oled.printf("RFID Reader - Michel\n");
-    printf("RFID Reader - Michel\n");
+    oled.printf("RFID Reader - Findify\n");
+    printf("RFID Reader - Findify\n");
   uint8_t id;
   float value1, value2;
   /* Init all sensors with default params */
@@ -100,8 +99,6 @@ int main() {
         //remove last char (:)
         UUIDBytes[strlen(UUIDBytes) -1] = '\0';
 
-
-      
         if (!rfidReader.PICC_IsNewCardPresent()) {
         }
 
@@ -137,6 +134,7 @@ int main() {
         //print response to oled display
         printf("\n");
         oled.clear();
+        
         // put cursor at 0,0
         oled.cursor(0, 0);
         printf("Code: %i\n", post_res->get_status_code());
